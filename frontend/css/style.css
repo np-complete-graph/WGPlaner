@@ -1,0 +1,91 @@
+@import url("//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap-glyphicons.css");
+@import url("https://fonts.googleapis.com/css?family=Raleway");
+
+body {
+	background-color: #34495e;
+	font-family: 'Raleway', sans-serif;
+}
+p{
+	color: #34495e;
+	font-size: 120%;	
+}
+
+.form-container{
+	margin: auto;
+  
+	width: 400px;
+}
+.form-signin {
+	box-shadow: 2px 2px #34495e;
+	padding: 15px 35px 45px;
+	background-color: #fff;
+	border: 1px solid rgba(0,0,0,0.1);  
+}
+
+.flat-input{
+	width: 100%;
+	margin-top: 20px;
+	height: 50px;
+	font-size: 120%;
+	color: #34495e;
+	padding-left: 10px;
+}
+
+.flat-input:focus{
+	outline: none !important;
+	border: solid 2px #34495e;
+}
+
+.flat-button{
+	margin-top: 20px;
+	padding: 10px 20px 10px 20px;
+	text-decoration: none;
+	transition: all 0.1s ease-in-out; 
+	background: transparent;
+	border-radius: 0 !important;
+	font-family: Arial;
+	font-size: 20px;
+	border: solid #34495e 2px;
+	color: #34495e;
+	width: 100%;
+}
+
+.red{
+	color: #FF513D;
+}
+
+input[type=checkbox]{
+  display: block;
+  opacity: 0;
+}
+label {
+  width: 60px;
+  height: 30px;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  background: rgb(189, 189, 189);
+  border-radius: 30px;
+  margin-right: 20px;
+  
+  transition: background-color 0.4s;
+  -moz-transition: background-color 0.4s;
+  -webkit-transition: background-color 0.4s;
+}
+label:after {
+  left: 0;
+  width: 20px;
+  height: 20px;
+  margin: 5px;
+  content: '';
+  position: absolute;
+  background: #FFF;
+  border-radius: 10px;
+}
+input:checked + label {
+  background: rgb(39, 173, 95);
+}
+input:checked + label:after {
+  left: auto;
+  right: 0;
+}
