@@ -3,7 +3,7 @@ const mysqlModel = require('mysql-model');
 var databaseConnection = mysqlModel.createConnection({
 	host     : 'localhost',
 	user     : 'root',
-	password : '',
+	password : 'quiscustodies',
 	database : 'WGPlanerV2',
 });
 
