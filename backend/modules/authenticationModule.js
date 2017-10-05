@@ -38,8 +38,8 @@ router.post('/', function(req, res){
 			req.socket.remoteAddress ||
 			req.connection.socket.remoteAddress;
 			var loginAttempt = tabaseModule.LoginAttempt();
-			loginAttempt.read(ip);
-			utilsModule.sendError(res, 400, "Wrong credentials");*/
+			loginAttempt.read(ip);;*/
+			utilsModule.sendError(res, 400, "Wrong credentials");
 		}
 	});
 });
