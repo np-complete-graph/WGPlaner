@@ -6,6 +6,7 @@
     		"express": "*",
     		"jsonwebtoken": "*",
     		"morgan": "*",
-    		"mysql-model": "*"
+    		"mysql-model": "*",
+		"cors": "*"
 	}
 }
