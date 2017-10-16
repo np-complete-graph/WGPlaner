@@ -1,3 +1,4 @@
 module.exports = {
-    'secret': 'ilovescotchyscotch',
+    'secret': 'ThisIsAVerySecureSecret',
+    'environment': 'dev'
 };
