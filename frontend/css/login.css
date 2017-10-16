@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway:300");
+
+body {
+    background-color: #34495e;
+    font-family: 'Raleway', sans-serif;
+}
+p{
+    color: #34495e;
+    font-size: 120%;	
+}
+
+.form-container{
+    margin: auto;
+
+    width: 500px;
+}
+.form-signin {
+    box-shadow: 2px 2px #34495e;
+    padding: 15px 35px 15px;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,0.1);  
+}
+
+/* Material Design Alerts */
+.alert{
+    background-image: none;
+    color: white;
+}
+.alert-warning{
+    background-color: #d35400;
+}
+.alert-danger{
+    background-color: #c0392b;
+}
+
+input{
+    font-family: inherit;
+}
+
+.md-button{
+    width: 100%;
+    height: 50px;
+    font-weight: bold !important;
+}
+
+.md-login{
+    color: white !important;
+    background-color: #34495e !important;
+}

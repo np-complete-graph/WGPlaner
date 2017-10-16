@@ -1,0 +1,47 @@
+<!--
+<nav class="navbar navbar-inverse navbar-fixed-top" id="sidebar-wrapper" role="navigation">
+<ul class="nav sidebar-nav">
+<li class="sidebar-brand">
+<a href="<?php echo $root?>/profile.php?id=<?php echo $_SESSION['UserId']?>">
+
+</a>
+</li>
+<li>
+<a href="./home.php"><h4><strong>Meine Funktionen</strong></h4></a>
+</li>
+<li>
+<a href="./users.php"><h4><strong>Benutzer verwalten</strong></h4></a>
+</li>
+<li>
+<a href="./profile.php?id=<?php echo $_SESSION['UserId']?>"><h4><strong>Profil</strong></h4></a>
+</li>
+</ul>
+</nav>
+-->
+
+<nav class="navbar navbar-default navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Software</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="home.php">Meine Services</a></li>
+                <li><a href="#">Mein Profil</a></li>
+                <li><a href="users.php">Benutzer verwalten</a></li>
+            </ul>
+            <div class="navbar-right">
+                <span><p><i class="material-icons">person</i> Hi, Lukas</p></span>
+            </div>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
