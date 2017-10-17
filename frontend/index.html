@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link rel="shortcut icon" href="./img/favicon.png">	
+        <title>WGPlaner</title>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+        <!-- Angular Material requires Angular.js Libraries -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+
+        <!-- Angular Material Library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+        <link href="css/login.css" rel="stylesheet" type="text/css">
+
+        <script type="text/javascript">
+            var app = angular.module('wgplaner', ['ngMaterial']);
+            app.controller('loginController', function($scope, $http, $window) {
+                $scope.loginData = {
+                    username : "",
+                    password : "",
+                    rememberMe : false,
+                }
+
+                $scope.lastError;
+
+                $scope.doLogin = function(){
+
+                    $http({
+                        method: 'POST',
+                        url: 'http://localhost:8080/api/authenticate',
+                        data: {
+                            username: $scope.loginData.username,
+                            password: CryptoJS.MD5($scope.loginData.password).toString(),
+                            rememberMe: $scope.loginData.rememberMe
+                        }
+                    }).then(function successCallback(response) {
+                        $scope.lastError = null;
+                        localStorage.setItem('token', response.data.token);
+                        console.log(localStorage.getItem("token"));
+                        $window.location.href = './Services/home.php';
+                    }, function errorCallback(response) {
+                        $scope.lastError = response.data;
+                        if ($scope.lastError.errorKey == "LOGIN_ACCOUNT_LOCKED"){
+                            $scope.lastError.isError = true;
+                        } else {
+                            $scope.lastError.isError = false;
+                        }
+                        console.log(response);
+                    });
+                }
+
+            });
+
+            app.controller('baseController', function($scope){
+
+                $scope.showErrorAlert = function(text){
+                    $("#error-dialog").hide();
+                    $("#error-dialog .dialog-text").html(text);
+                    $("#error-dialog").fadeTo(2000, 500).fadeOut(500, function(){
+                        $("#error-dialog").fadeOut(500);
+                    }); 
+                }
+
+                $scope.showSuccessAlert = function(text){
+                    $("#success-dialog").hide();
+                    $("#success-dialog .dialog-text").html(text);
+                    $("#success-dialog").fadeTo(2000, 500).slideUp(500, function(){
+                        $("#success-dialog").slideUp(500);
+                    }); 
+                }
+            });
+        </script>
+
+    </head>
+    <body ng-app="wgplaner" ng-controller="baseController" style="padding-top: 200px;">
+
+        <div class="alerts" align="center">
+            <div class="alert alert-success alert-dismissable" style="display:none;" id="success-dialog">
+                <button type="button" class="close" data-dismiss="alert">x</button>
+                <p><strong>Erfolg!</p></span> <p class="dialog-text">Indicates a successful or positive action.</p>
+        </div>
+
+        <div class="form-container">
+            <div class="alert alert-danger alert-dismissable" style="display:none;"  id="error-dialog">
+                <button type="button" class="close" data-dismiss="alert">x</button>
+                <p><strong>Fehler!</strong></p> <p class="dialog-text">Indicates a successful or positive action.</p>
+            </div>
+
+            <div class="form-container" ng-controller="loginController">
+                <!-- Login Form -->
+                <form method="POST" class="form-signin" ng-submit="doLogin()" align="center" ng-cloak class="md-inline-form">
+
+                    <h2 align="center">Bitte anmelden</h2>
+                    <br>
+
+
+                    <md-input-container class="md-block" style="text-align: left">
+                        <label>Username</label>
+                        <input required type="text" required md-no-asterisk name="username" ng-model="loginData.username">
+                        <div ng-messages="loginData.username.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+
+
+                    <md-input-container class="md-block" style="text-align: left">
+                        <label>Password</label>
+                        <input required type="password" name="password" ng-model="loginData.password">
+                        <div ng-messages="loginData.password.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+
+                    <!-- Error labels -->  
+                    <div class="alert" ng-class="{'alert-danger': lastError.isError, 'alert-warning': !lastError.isError}" ng-show="lastError">
+                        <md-icon ng-hide="lastError.isError" md-font-set="material-icons" style="color: white">warning</md-icon>
+                        <md-icon ng-show="lastError.isError" md-font-set="material-icons" style="color: white">error_outline</md-icon>
+                             <strong>&nbsp; Danger!</strong> {{lastError.message}}
+                    </div>
+                    <md-button class="md-raised md-login" type="submit">Login</md-button> 
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

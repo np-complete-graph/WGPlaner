@@ -1,63 +1,138 @@
-const express = require('express');
-const app = express();
-const router = express.Router();
-const jwt = require('jsonwebtoken');
+// REQUIREMENTS
+const express           = require('express');
+var config              = require('../config'); // get our config file
+const router            = express.Router();
+const jwt               = require('jsonwebtoken');
+const jsesc             = require('jsesc');
+const moment            = require('moment');
+const async             = require('async');
+var mysql               = require('mysql');
+var CryptoJS            = require("crypto");
+var mongoose            = require("mongoose");
+const databaseModule    = require('./database.js');
+const util              = require('util');
+var User                = databaseModule.User;
+var LoginAttempt        = databaseModule.LoginAttempt;
 
-const databaseModule = require('./database.js');
+// IMPORTS
 const utilsModule = require('./utilsModule.js');
 
-const databaseConnection = databaseModule.databaseConnection;
+// CONSTANTS
 
-router.post('/', function(req, res){
+const numAttemptsThreshold = 3;
+const lockDuration = '10';
+const lockDurationUnit = 'seconds';
 
-	var userModel = databaseModule.User();
+var ServerError = require('../models/server_error.js');
 
-	let username = req.body.username;
-	let password = req.body.password;
+function isIPLocked(loginAttempt){
+    console.log(loginAttempt);
+    if (loginAttempt){
+        // check if this ip is blocked for a certain amount
+        var dateNow = moment(Date.now());
+        var futureDate = moment(loginAttempt.Timestamp).add(lockDuration, lockDurationUnit);
+        return (loginAttempt.NumAttempts >= numAttemptsThreshold) && (futureDate.diff(dateNow, lockDurationUnit) >= 0);
+    }
+    return false;
+}
 
-	userModel.find('all', {where: `Username = '${username}'`}, function(err, rows) {
-		//TODO check login
-		if (err) console.log(err);
-		if(rows.length == 1){
-			var user = rows[0];
-			console.log(user);
+router.post('/', function(req, res, next){
 
-			var claims = {
-				roles: user.Roles
-			}
+    let username = jsesc(req.body.username);
+    let password = CryptoJS.createHash("sha256").update(jsesc(req.body.password)).digest("hex");
+    let ipaddress = req.connection.remoteAddress;
 
-			//TODO: define token lifetime
-			var token = jwt.sign(claims, "test", {
-				expiresIn : "3000s"
-			});
-			res.send({'token': token});
-		} else {
-			//TODO save ip in database
-			/*var ip = req.headers['x-forwarded-for'] || 
-			req.connection.remoteAddress || 
-			req.socket.remoteAddress ||
-			req.connection.socket.remoteAddress;
-			var loginAttempt = tabaseModule.LoginAttempt();
-			loginAttempt.read(ip);
-			utilsModule.sendError(res, 400, "Wrong credentials");*/
-		}
-	});
+    User.find({Username: username, Password: password}, function(error, users){
+        if (error) console.log(error);
+
+        LoginAttempt.find({IpAddress : ipaddress}, function(error, loginAttempts){
+            if (error) console.log(error);
+
+            let loginAttempt = loginAttempts[0];
+
+            let isLocked = false;
+            if (loginAttempts.length == 1){
+                isLocked = (users.length == 0 && (loginAttempt.NumAttempts >= numAttemptsThreshold));
+                isLocked |= isIPLocked(loginAttempt); 
+            }
+
+            function returnError(){
+                if (isLocked || (loginAttempt.NumAttempts >= numAttemptsThreshold)){
+                    let futureDate =
+                        moment(Date.now()).add(lockDuration, lockDurationUnit);
+                    let messageText = util.format(ServerError.ACCOUNT_LOCKED_ERROR_MESSAGE, lockDuration, lockDurationUnit, futureDate.format("DD.MM.YYYY HH:mm:ss"));
+                    return next(new ServerError(403, messageText, "LOGIN_ACCOUNT_LOCKED"));    
+                }
+
+                let remainingAttempts = (numAttemptsThreshold-loginAttempt.NumAttempts);
+                return next(new ServerError(403, "Invalid credentials\r\n"+remainingAttempts+" attempts remaining!", "LOGIN_INVALID_CREDENTIALS")); 
+            }
+
+            if (isLocked){
+                return returnError();
+            }
+
+            console.log(isLocked);
+
+            if (users.length == 1){
+                async.series([
+                    function(callback){
+                        if (loginAttempts.length == 1){
+                            loginAttempt.NumAttempts = 0;
+                            loginAttempt.save(callback());
+                        } else {
+                            callback();
+                        }
+                    },
+                    function(callback){
+                        user = users[0];
+
+                        //Send User a token
+                        let claims = {
+                            roles: user.Roles
+                        }
+
+                        //TODO: define token lifetime
+                        let token = jwt.sign(claims, "test", {
+                            expiresIn : "3000s"
+                        });
+                        res.status(200);
+                        res.send({'token': token}).end(callback);
+                    }
+                ]);
+                return;
+            }
+
+            if (loginAttempts.length == 0){
+                console.log("Created new login attempt entry for "+ipaddress);
+
+                loginAttempt = new LoginAttempt();
+                loginAttempt.Username = username;
+                loginAttempt.IpAddress = ipaddress;
+                loginAttempt.NumAttempts = 1;
+
+                loginAttempt.Timestamp = Date.now();
+                return loginAttempt.save(returnError);
+            } else if (loginAttempts.length == 1){
+                console.log("Update existing login attempt for "+ipaddress);
+
+                loginAttempt.NumAttempts++;
+                loginAttempt.Timestamp = Date.now();
+                return loginAttempt.save(returnError);
+            }
+        })
+    });
 });
 
-exports.validateToken = function(req, res){
-	if (req.headers.hasOwnProperty('token')){
-		var token = req.headers.token;
-		jwt.verify(token, 'test', function(err, decoded) {
-			if (err){
-				utilsModule.sendError(res, 405, "Session expired");
-				return false;
-			} 
-		});
-	} else {
-		utilsModule.sendError(res, 401, "Authorization required!");
-		return false;
-	}
-	return true;
+exports.validateToken = function(req, res, next){
+    if (req.headers.hasOwnProperty('token')){
+        let token = req.headers.token;
+        jwt.verify(token, config.get('secret'), function(err, decoded) {
+            if (err){
+                return next(new ServerError(401, "Token expired", "LOGIN_INVALID_TOKEN"));
+            } 
+        });
+    }
 }
 
 exports.router = router;

@@ -1,26 +1,35 @@
-const mysqlModel = require('mysql-model');
+var mongoose = require('mongoose');
+var dbURI = 'mongodb://localhost/WGPlanerV2';
+var options = {}
+mongoose.connect(dbURI);
 
-var databaseConnection = mysqlModel.createConnection({
-	host     : 'localhost',
-	user     : 'root',
-	password : 'quiscustodies',
-	database : 'WGPlanerV2',
+mongoose.connection.on('connected', function () {  
+  console.log('Mongoose default connection open to ' + dbURI);
+}); 
+
+// If the connection throws an error
+mongoose.connection.on('error',function (err) {  
+  console.log('Mongoose default connection error: ' + err);
+}); 
+
+// When the connection is disconnected
+mongoose.connection.on('disconnected', function () {  
+  console.log('Mongoose default connection disconnected'); 
 });
 
-var User = databaseConnection.extend({
-	tableName: "users",
+var db = mongoose.connection;
+
+var userSchema = new mongoose.Schema({
+    Username:  String,
+    Password: String,
 });
 
-var LoginAttempt = databaseConnection.extend({
-	tableName: "login_attempts",
+var loginAttemptSchema = new mongoose.Schema({
+    IpAddress:  String,
+    NumAttempts: {type: Number, min:0},
+    Timestamp : {type: Date},
+    Username: String
 });
 
-exports.User = function(){
-	return new User();
-};
-
-exports.LoginAttempt = function(){
-	return new LoginAttempt();
-}
-
-exports.databaseConnection = databaseConnection;
+module.exports.User = db.model('User', userSchema);
+module.exports.LoginAttempt = db.model("LoginAttempt", loginAttemptSchema);

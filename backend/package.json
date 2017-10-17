@@ -1,12 +1,17 @@
 {
-  	"name": "node-token-jwt",
-  	"main": "server.js",
+	"name": "node-token-jwt",
+	"main": "server.js",
 	"dependencies": {
-			"body-parser": "*",
-    		"express": "*",
-    		"jsonwebtoken": "*",
-    		"morgan": "*",
-    		"mysql-model": "*",
-		"cors": "*"
+		"body-parser": "*",
+		"express": "*",
+		"jsonwebtoken": "*",
+		"morgan": "*",
+        "mongoose": "*",
+		"cors": "*",
+		"crypto-js": "*",
+		"method-override": "*",
+        "jsesc":    "*",
+        "moment":   "*",
+        "async":    "*"
 	}
 }
